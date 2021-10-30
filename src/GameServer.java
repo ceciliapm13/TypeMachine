@@ -1,6 +1,11 @@
+import org.academiadecodigo.bootcamp.Prompt;
+
 import java.io.*;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
+import java.sql.SQLOutput;
 import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -13,10 +18,15 @@ public class GameServer { //GameServer encarrega-se de estabelecer ligações e 
     private Socket userSocket;
     private UserConnection userConnection;
     private LinkedList<UserConnection> users;
+    private String ipDaMaquina;
 
-    public GameServer() {
+
+    public GameServer() throws UnknownHostException {
 
         portNumber = 3333;
+
+        ipDaMaquina = InetAddress.getLocalHost().getHostAddress();
+        System.out.println("ip: "+ipDaMaquina);
 
         //criação de uma socket de Servidor && criação de uma socket de cliente
         try {
@@ -58,7 +68,7 @@ public class GameServer { //GameServer encarrega-se de estabelecer ligações e 
     }
 
     //MAIN SERVER
-    public static void main(String[] args) {
+    public static void main(String[] args) throws UnknownHostException {
         new GameServer();
     }
 
@@ -121,9 +131,10 @@ public class GameServer { //GameServer encarrega-se de estabelecer ligações e 
         public void changeThreadName() { // não é um "setName", porque setter são para as propriedades da classe, não para algo específico da thread
 
             try {
-                sendTitleMessage("What's your name?");
+                sendTitleMessage("What's your nick name: ");
                 String userName = terminalReader.readLine();
                 Thread.currentThread().setName(userName);
+                System.out.println(userName+" Está no servidor");
 
             } catch (IOException ioException) {
                 ioException.printStackTrace();
@@ -133,13 +144,18 @@ public class GameServer { //GameServer encarrega-se de estabelecer ligações e 
 
         @Override
         public void run() {
-
-            sendTitleMessage("Welcome to the You-Shouldn't-Be-Here-Chat!\n" + "We know you're a mortal. Enjoy this occult connection to the underworld.");
+            
+            sendTitleMessage("---------------------------\n");
+            sendTitleMessage("Welcome to TypingMachine!!!\n");
+            sendTitleMessage("---------------------------\n");
             changeThreadName();
+
+            sendTitleMessage("\033[H\033[2J");
 
             while(userSocket.isBound()) {
                 receive();
-                send(messageReceived);
+               // send(messageReceived);
+                System.out.println("sms enviada -> " + messageReceived);
             }
 
 
