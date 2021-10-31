@@ -98,6 +98,7 @@ public class GameServer { //GameServer encarrega-se de estabelecer ligações e 
         private BufferedReader terminalReader;
         private String messageReceived;
         private String userName;
+        private String namePlayer;
 
 
         public UserConnection(Socket userSocket) {
@@ -159,10 +160,14 @@ public class GameServer { //GameServer encarrega-se de estabelecer ligações e 
             String username = terminalReader.readLine();
 
             this.userName = username;
+           namePlayer = username;
 
             Thread.currentThread().setName(username);
             System.out.println(username + " Está no servidor");
 
+        }
+        public String getUserName(){
+            return namePlayer;
         }
 
         @Override
@@ -188,12 +193,10 @@ public class GameServer { //GameServer encarrega-se de estabelecer ligações e 
                 if (messageReceived == null) {
                     break;
                 }
-                send("ola");
-
+               // send(messageReceived+": "+namePlayer);
+                System.out.println(getUserName());
                 //System.out.println(userName + " sms enviada -> " + messageReceived);
             }
-
-
             /*
             //novo método communicate:
 
