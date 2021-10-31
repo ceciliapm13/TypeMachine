@@ -1,10 +1,10 @@
 import org.academiadecodigo.bootcamp.Prompt;
+import org.academiadecodigo.bootcamp.scanners.string.StringInputScanner;
 
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
+
 
 public class Game {
 
@@ -13,7 +13,10 @@ public class Game {
     private Player player;
     private Prompt prompt;
     private GameExpression expressions;
-    private String[] expressionsArray = {
+    private StringInputScanner challenge;
+    private String answer;
+    private int challengeCounter;
+    public static final String[] expressionsArray = {
             "Alvíssaras" + SPACE,
             "Beneplácito" + SPACE,
             "Modorrento" + SPACE,
@@ -24,11 +27,13 @@ public class Game {
             "O Yanomami xifópago tergiversa sobre suas idiossincrasias" + SPACE
     } ;
     private int countRound;
-    private PrintWriter out;
+        private PrintWriter out;
 
     public Game() {
-        countRound =1;
+        player = new Player();
+        challengeCounter = 0;
         Prompt prompt = new Prompt(System.in, System.out);
+        this.challenge = new StringInputScanner();
 
     }
 
@@ -41,30 +46,42 @@ public class Game {
 
     //game start: início do jogo a partir do momento em que dois players estão conectados
     public void start() {
+        //metodo que introduz a 1ª ronda
         while(expressionsArray.length < 8) {
             nextChallenge();
             awaitPlayerInput();
         }
-
     }
 
 
-
-    //
     public void nextChallenge() {
-        /*PrintWriter out = new PrintWriter(new OutputStreamWriter(user.userSocket.getOutputStream()),true);
-        out.println(message)
-        */
+        try (PrintWriter out = new PrintWriter(new OutputStreamWriter(player.getUserSocket().getOutputStream()), true)) {
+            out.println("Next challenge \n" +
+                            "Get ready \n" +
+                    "3 \n" +
+                    "2 \n" +
+                    "1 \n");
 
-
+            //StringInputScanner challenge = new StringInputScanner();
+            challenge.setMessage(expressionsArray[challengeCounter]);
+            answer = prompt.getUserInput(challenge);
+            challengeCounter++;
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
+        }
     }
 
-    //
+
     public void awaitPlayerInput() {
         //Timer
-        //if(playerInput.equals()arrayWord)
+        if(answer.equals(expressionsArray[challengeCounter])) {
+            player.setScore(player.getScore() + 1);
+        } else {
 
-    }
+        }
+
+
+        }
 
     public void endMessage() {
 
