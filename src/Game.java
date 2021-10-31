@@ -13,9 +13,13 @@ public class Game {
     private Player player;
     private Prompt prompt;
     private GameExpression expressions;
-    private StringInputScanner challenge;
+    private StringInputScanner challenge; // "challenge" é uma palavra do array naquele momento
     private String answer;
     private int challengeCounter;
+    private int roundCounter;
+    private PrintWriter out;
+
+
     public static final String[] expressionsArray = {
             "Alvíssaras" + SPACE,
             "Beneplácito" + SPACE,
@@ -26,13 +30,14 @@ public class Game {
             "Elocubrava ao repetenar-se" + SPACE,
             "O Yanomami xifópago tergiversa sobre suas idiossincrasias" + SPACE
     } ;
-    private int countRound;
-        private PrintWriter out;
 
-    public Game() {
+
+    public Game() throws IOException {
         player = new Player();
         challengeCounter = 0;
-        Prompt prompt = new Prompt(System.in, System.out);
+        roundCounter = 0;
+        out = new PrintWriter(new OutputStreamWriter(player.getUserSocket().getOutputStream()), true);
+        Prompt prompt = new Prompt(System.in, System.out); // TODO
         this.challenge = new StringInputScanner();
 
     }
@@ -46,7 +51,7 @@ public class Game {
 
     //game start: início do jogo a partir do momento em que dois players estão conectados
     public void start() {
-        //metodo que introduz a 1ª ronda
+        //metodo que introduz a 1ª ronda!!
         while(expressionsArray.length < 8) {
             nextChallenge();
             awaitPlayerInput();
@@ -55,9 +60,8 @@ public class Game {
 
 
     public void nextChallenge() {
-        try (PrintWriter out = new PrintWriter(new OutputStreamWriter(player.getUserSocket().getOutputStream()), true)) {
             out.println("Next challenge \n" +
-                            "Get ready \n" +
+                    "Get ready \n" +
                     "3 \n" +
                     "2 \n" +
                     "1 \n");
@@ -66,20 +70,19 @@ public class Game {
             challenge.setMessage(expressionsArray[challengeCounter]);
             answer = prompt.getUserInput(challenge);
             challengeCounter++;
-        } catch (IOException ioException) {
-            ioException.printStackTrace();
-        }
+
     }
 
 
-    public void awaitPlayerInput() {
-        //Timer
+    public void awaitPlayerInput() { // TODO synchronized
+        roundCounter++;
         if(answer.equals(expressionsArray[challengeCounter])) {
+            out.println(player.getName() + " has won round " + roundCounter); // TODO
             player.setScore(player.getScore() + 1);
+            return;
         } else {
-
+            out.println("You failed miserably. Try harder next round.");
         }
-
 
         }
 
