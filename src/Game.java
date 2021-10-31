@@ -10,6 +10,7 @@ public class Game {
 
     public static final String SPACE = new String(new char[15]).replace("\0", "\n");
 
+    private GameServer gameServer;
     private Player player;
     private Prompt prompt;
     private GameExpression expressions;
@@ -18,8 +19,6 @@ public class Game {
     private int challengeCounter;
     private int roundCounter;
     private PrintWriter out;
-
-
     public static final String[] expressionsArray = {
             "Alvíssaras" + SPACE,
             "Beneplácito" + SPACE,
@@ -34,6 +33,7 @@ public class Game {
 
     public Game() throws IOException {
         player = new Player();
+        //gameServer = new GameServer;
         challengeCounter = 0;
         roundCounter = 0;
         out = new PrintWriter(new OutputStreamWriter(player.getUserSocket().getOutputStream()), true);
@@ -77,7 +77,7 @@ public class Game {
     public void awaitPlayerInput() { // TODO synchronized
         roundCounter++;
         if(answer.equals(expressionsArray[challengeCounter])) {
-            out.println(player.getName() + " has won round " + roundCounter); // TODO
+            //out.println( + " has won round " + roundCounter); // TODO
             player.setScore(player.getScore() + 1);
             return;
         } else {
