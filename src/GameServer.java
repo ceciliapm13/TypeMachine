@@ -22,7 +22,9 @@ public class GameServer { //GameServer encarrega-se de estabelecer ligações e 
     private String ipDaMaquina;
     private int playerNumber = 0;
     private boolean twoPlayes;
-    Prompt prompt;
+    private Prompt prompt;
+    private String getName;
+    private String namePlayer;
 
 
     public GameServer() throws UnknownHostException {
@@ -70,6 +72,10 @@ public class GameServer { //GameServer encarrega-se de estabelecer ligações e 
 
     }
 
+    public String getUserName(){
+        return namePlayer;
+    }
+
 
     public void broadcast(String message) {
         for (UserConnection user : users) {
@@ -89,8 +95,6 @@ public class GameServer { //GameServer encarrega-se de estabelecer ligações e 
     public static void main(String[] args) throws UnknownHostException {
         new GameServer();
     }
-
-
     //USER CONNECTION (Esta classe Ñ é o cliente (user), é a ligação que o servidor estabelece com o cliente
     public class UserConnection implements Runnable {
 
@@ -98,7 +102,7 @@ public class GameServer { //GameServer encarrega-se de estabelecer ligações e 
         private BufferedReader terminalReader;
         private String messageReceived;
         private String userName;
-        private String namePlayer;
+
 
 
         public UserConnection(Socket userSocket) {
@@ -166,9 +170,7 @@ public class GameServer { //GameServer encarrega-se de estabelecer ligações e 
             System.out.println(username + " Está no servidor");
 
         }
-        public String getUserName(){
-            return namePlayer;
-        }
+
 
         @Override
         public void run() {
