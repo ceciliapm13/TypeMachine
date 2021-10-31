@@ -1,5 +1,7 @@
 import org.academiadecodigo.bootcamp.Prompt;
+import org.academiadecodigo.bootcamp.scanners.string.StringInputScanner;
 
+import javax.xml.bind.SchemaOutputResolver;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -19,15 +21,18 @@ public class GameServer { //GameServer encarrega-se de estabelecer ligações e 
     private LinkedList<UserConnection> users;
     private String ipDaMaquina;
     private int playerNumber = 0;
-    private PrintWriter terminalSender;
+    private boolean twoPlayes;
+    Prompt prompt;
 
 
     public GameServer() throws UnknownHostException {
 
+        twoPlayes = false;
+
+        prompt = new Prompt(System.in, System.out);
         portNumber = 3333;
-        PrintWriter writer;
         ipDaMaquina = InetAddress.getLocalHost().getHostAddress();
-        System.out.println("ip: "+ipDaMaquina);
+        System.out.println("ip: " + ipDaMaquina);
 
         //criação de uma socket de Servidor && criação de uma socket de cliente
         try {
@@ -38,7 +43,7 @@ public class GameServer { //GameServer encarrega-se de estabelecer ligações e 
 
             while (playerNumber < 2) {
 
-                switch (playerNumber){
+                switch (playerNumber) {
 
                     case 0:
                     case 1:
@@ -47,6 +52,7 @@ public class GameServer { //GameServer encarrega-se de estabelecer ligações e 
                         userSocket = serverSocket.accept();
                         userConnection = new UserConnection(userSocket);
                         // representações do novo utilizador no servidor. criada a ligação após a criação da socket
+
                         cachedPool.submit(userConnection);
                         users.add(userConnection);
                         break;
@@ -55,6 +61,7 @@ public class GameServer { //GameServer encarrega-se de estabelecer ligações e 
                 }
 
                 playerNumber++;
+
             }
 
         } catch (IOException ioException) {
@@ -68,7 +75,7 @@ public class GameServer { //GameServer encarrega-se de estabelecer ligações e 
         for (UserConnection user : users) {
 
             try {
-                PrintWriter out = new PrintWriter(new OutputStreamWriter(user.userSocket.getOutputStream()),true);
+                PrintWriter out = new PrintWriter(new OutputStreamWriter(user.userSocket.getOutputStream()), true);
                 out.println(message);
 
 
@@ -91,7 +98,6 @@ public class GameServer { //GameServer encarrega-se de estabelecer ligações e 
         private BufferedReader terminalReader;
         private String messageReceived;
         private String userName;
-        private PrintWriter terminalSender;
 
 
         public UserConnection(Socket userSocket) {
@@ -122,7 +128,7 @@ public class GameServer { //GameServer encarrega-se de estabelecer ligações e 
 
         public void send(String messageReceived) { //envio de mensagem
 
-            broadcast(Thread.currentThread().getName() + ": " + messageReceived);
+            broadcast(Thread.currentThread().getName() + " Array de palavras " + messageReceived);
 
         }
 
@@ -140,47 +146,51 @@ public class GameServer { //GameServer encarrega-se de estabelecer ligações e 
 
         }
 
-        public void serverFullMessage(){
+        public void serverFullMessage() {
             sendTitleMessage("\033[H\033[2J");
             sendTitleMessage("---------------------------\n");
             sendTitleMessage("     Server Is Full...    \n");
             sendTitleMessage("---------------------------\n");
         }
 
-        public void changeThreadName() { // não é um "setName", porque setter são para as propriedades da classe, não para algo específico da thread
+        public void changeThreadName() throws IOException { // não é um "setName", porque setter são para as propriedades da classe, não para algo específico da thread
 
-            try {
-                sendTitleMessage("What's your nick name: ");
-                String userName = terminalReader.readLine();
-                this.userName = userName;
-                Thread.currentThread().setName(userName);
-                System.out.println(userName+" Está no servidor");
+            sendTitleMessage("What is your name? ");
+            String username = terminalReader.readLine();
 
-            } catch (IOException ioException) {
-                ioException.printStackTrace();
-            }
+            this.userName = username;
+
+            Thread.currentThread().setName(username);
+            System.out.println(username + " Está no servidor");
 
         }
 
         @Override
         public void run() {
 
+            sendTitleMessage("\033[H\033[2J");
             sendTitleMessage("---------------------------\n");
             sendTitleMessage("Welcome to TypingMachine!!!\n");
             sendTitleMessage("---------------------------\n");
-            changeThreadName();
+
+            try {
+                changeThreadName();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             sendTitleMessage("\033[H\033[2J");
 
-            while(!userSocket.isClosed()) {
+            while (!userSocket.isClosed()) {
 
                 sendTitleMessage("\033[H\033[2J");
                 receive();
                 if (messageReceived == null) {
                     break;
                 }
-               // send(messageReceived);
-                System.out.println(userName+" sms enviada -> " + messageReceived);
+                send("ola");
+
+                //System.out.println(userName + " sms enviada -> " + messageReceived);
             }
 
 
