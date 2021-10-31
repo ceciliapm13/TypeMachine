@@ -5,7 +5,6 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.sql.SQLOutput;
 import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -19,12 +18,14 @@ public class GameServer { //GameServer encarrega-se de estabelecer ligações e 
     private UserConnection userConnection;
     private LinkedList<UserConnection> users;
     private String ipDaMaquina;
+    private int playerNumber = 0;
+    private PrintWriter terminalSender;
 
 
     public GameServer() throws UnknownHostException {
 
         portNumber = 3333;
-
+        PrintWriter writer;
         ipDaMaquina = InetAddress.getLocalHost().getHostAddress();
         System.out.println("ip: "+ipDaMaquina);
 
@@ -35,15 +36,25 @@ public class GameServer { //GameServer encarrega-se de estabelecer ligações e 
 
             ExecutorService cachedPool = Executors.newCachedThreadPool();
 
-            while (true) {
+            while (playerNumber < 2) {
 
-                // o servidor fica à espera de uma socket de um novo user. Quando aceita (existe ligação), é atribuido à socket uma conexão do user
-                userSocket = serverSocket.accept();
-                userConnection = new UserConnection(userSocket);
-                // representações do novo utilizador no servidor. criada a ligação após a criação da socket
-                cachedPool.submit(userConnection);
-                users.add(userConnection);
+                switch (playerNumber){
 
+                    case 0:
+                    case 1:
+                    case 2:
+                        // o servidor fica à espera de uma socket de um novo user. Quando aceita (existe ligação), é atribuido à socket uma conexão do user
+                        userSocket = serverSocket.accept();
+                        userConnection = new UserConnection(userSocket);
+                        // representações do novo utilizador no servidor. criada a ligação após a criação da socket
+                        cachedPool.submit(userConnection);
+                        users.add(userConnection);
+                        break;
+                    // representações do novo utilizador no servidor. criada a ligação após a criação da socket
+
+                }
+
+                playerNumber++;
             }
 
         } catch (IOException ioException) {
@@ -79,6 +90,7 @@ public class GameServer { //GameServer encarrega-se de estabelecer ligações e 
         private Socket userSocket;
         private BufferedReader terminalReader;
         private String messageReceived;
+        private String userName;
         private PrintWriter terminalSender;
 
 
@@ -128,11 +140,19 @@ public class GameServer { //GameServer encarrega-se de estabelecer ligações e 
 
         }
 
+        public void serverFullMessage(){
+            sendTitleMessage("\033[H\033[2J");
+            sendTitleMessage("---------------------------\n");
+            sendTitleMessage("     Server Is Full...    \n");
+            sendTitleMessage("---------------------------\n");
+        }
+
         public void changeThreadName() { // não é um "setName", porque setter são para as propriedades da classe, não para algo específico da thread
 
             try {
                 sendTitleMessage("What's your nick name: ");
                 String userName = terminalReader.readLine();
+                this.userName = userName;
                 Thread.currentThread().setName(userName);
                 System.out.println(userName+" Está no servidor");
 
@@ -144,7 +164,7 @@ public class GameServer { //GameServer encarrega-se de estabelecer ligações e 
 
         @Override
         public void run() {
-            
+
             sendTitleMessage("---------------------------\n");
             sendTitleMessage("Welcome to TypingMachine!!!\n");
             sendTitleMessage("---------------------------\n");
@@ -152,10 +172,15 @@ public class GameServer { //GameServer encarrega-se de estabelecer ligações e 
 
             sendTitleMessage("\033[H\033[2J");
 
-            while(userSocket.isBound()) {
+            while(!userSocket.isClosed()) {
+
+                sendTitleMessage("\033[H\033[2J");
                 receive();
+                if (messageReceived == null) {
+                    break;
+                }
                // send(messageReceived);
-                System.out.println("sms enviada -> " + messageReceived);
+                System.out.println(userName+" sms enviada -> " + messageReceived);
             }
 
 
@@ -170,8 +195,6 @@ public class GameServer { //GameServer encarrega-se de estabelecer ligações e 
 
                     send(messageReceived);
                 }
-
-
 
             }
             */
