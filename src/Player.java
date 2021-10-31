@@ -7,8 +7,8 @@ public class Player {
     // private ... color;
     private int score;
 
-    public Player(Socket userSocket) {
-        this.userSocket = userSocket;
+    public Player() {
+
 
     }
 
@@ -26,10 +26,16 @@ public class Player {
         return score;
     }
 
-    public int score(int score) {
-        return this.score = score;
+    public void setScore(int score) {
+        this.score = score;
     }
 
+    public Socket getUserSocket() {
+        return userSocket;
+    }
 
-
+    //TODO add socket to server
+    public void setUserSocket(Socket userSocket) {
+        this.userSocket = userSocket;
+    }
 }
