@@ -11,7 +11,6 @@ public class Player implements Runnable {
 
     private Socket userSocket;
     private String name;
-    // private ... color;
     private int score;
     private PrintWriter out;
     private Game game;
@@ -21,6 +20,7 @@ public class Player implements Runnable {
     public Player(Socket player, Game game) {
         this.game = game;
         this.userSocket = player;
+        score = 0;
 
         try {
             out = new PrintWriter(new OutputStreamWriter(this.getUserSocket().getOutputStream()), true);
@@ -90,8 +90,8 @@ public class Player implements Runnable {
         } catch (IOException ioException) {
             ioException.printStackTrace();
         }
-
         while (true) {
+
             try {
                 Thread.sleep(50);
             } catch (InterruptedException e) {

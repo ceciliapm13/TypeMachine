@@ -25,8 +25,3 @@ public class GameServer {
         }
     }
 }
-
-   /* sendTitleMessage("\033[H\033[2J");
-    sendTitleMessage("---------------------------\n");
-    sendTitleMessage("     Server Is Full...    \n");
-    sendTitleMessage("---------------------------\n");*/
