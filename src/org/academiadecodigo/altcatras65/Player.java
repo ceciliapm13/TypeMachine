@@ -1,3 +1,5 @@
+package org.academiadecodigo.altcatras65;
+
 import org.academiadecodigo.bootcamp.Prompt;
 import org.academiadecodigo.bootcamp.scanners.string.StringInputScanner;
 
@@ -16,11 +18,17 @@ public class Player implements Runnable {
     private Game game;
     private String promptMsg;
     private boolean prompted;
+    private int challengeCounter;
+    private int roundCounter;
+    private boolean roundEnd;
 
     public Player(Socket player, Game game) {
         this.game = game;
         this.userSocket = player;
         score = 0;
+        challengeCounter = 0;
+        roundCounter = 1;
+        roundEnd = true;
 
         try {
             out = new PrintWriter(new OutputStreamWriter(this.getUserSocket().getOutputStream()), true);
@@ -49,14 +57,25 @@ public class Player implements Runnable {
         return userSocket;
     }
 
-    //TODO add socket to server
-    public void setUserSocket(Socket userSocket) {
-        this.userSocket = userSocket;
+    //game start: início do jogo a partir do momento em que dois players estão conectados
+    public void start(Socket playerSocket) {
+        if (roundEnd) {
+            System.out.println(Thread.currentThread().getName() + " inside other start method");
+            nextChallenge(playerSocket);
+            game.givePrompt(); // pedido da resposta do player
+            roundEnd = false;
+            if (roundCounter == 10) {
+                game.endMessage();
+            }
+        }
+
+
     }
 
     public void prompt(String message) {
         try {
             if (prompted) {
+                prompted = false;
                 Prompt prompt = new Prompt(getUserSocket().getInputStream(), new PrintStream(getUserSocket().getOutputStream()));
 
                 StringInputScanner question1 = new StringInputScanner();
@@ -70,8 +89,33 @@ public class Player implements Runnable {
         }
     }
 
+    public void nextChallenge(Socket playerSocket) {
+
+        try {
+            System.out.println(Thread.currentThread().getName() + " inside next challenge method");
+            game.sendMessage(playerSocket, "New challenge \n");
+            Thread.sleep(3000);
+            game.sendMessage(playerSocket, "Get ready... \n");
+            Thread.sleep(2000);
+            game.sendMessage(playerSocket, "3\n");
+            Thread.sleep(1000);
+            game.sendMessage(playerSocket, "2\n");
+            Thread.sleep(1000);
+            game.sendMessage(playerSocket, "1\n");
+            Thread.sleep(1000);
+            game.sendMessage(playerSocket, "TYPE!\n");
+            Thread.sleep(1000);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+
+
+    }
+
+
     @Override
     public void run() {
+
 
         try {
             Prompt prompt = new Prompt(getUserSocket().getInputStream(), new PrintStream(getUserSocket().getOutputStream()));
@@ -86,10 +130,36 @@ public class Player implements Runnable {
             question1.setMessage(welcome);
 
             this.name = prompt.getUserInput(question1);
+            this.game.setPlayerNumber(this.game.getPlayerNumber() + 1);
 
         } catch (IOException ioException) {
             ioException.printStackTrace();
         }
+
+        loop:
+        while (true) {
+            System.out.println("Waiting for players inside while loop");
+
+            for (int i = 0; i < game.getPlayers().length; i++) {
+                if (game.getPlayers()[i] != null) {
+                    if (game.getPlayers()[i].getName() != null) {
+                        game.sendMessage(game.getPlayers()[i].getUserSocket(), "Waiting for players!");
+                    }
+                }
+                if (game.playerNumber == 2) {
+                    break loop;
+                }
+            }
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        start(this.getUserSocket());
+
+
         while (true) {
 
             try {

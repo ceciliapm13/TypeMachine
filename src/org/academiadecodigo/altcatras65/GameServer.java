@@ -1,3 +1,5 @@
+package org.academiadecodigo.altcatras65;
+
 import java.net.ServerSocket;
 
 public class GameServer {

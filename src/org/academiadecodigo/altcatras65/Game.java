@@ -1,4 +1,5 @@
-import org.academiadecodigo.bootcamp.Prompt;
+package org.academiadecodigo.altcatras65;
+
 import org.academiadecodigo.bootcamp.scanners.string.StringInputScanner;
 
 import java.io.IOException;
@@ -6,7 +7,6 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 
 public class Game implements Runnable {
@@ -14,20 +14,15 @@ public class Game implements Runnable {
     //public static final String SPACE = new String(new char[15]).replace("\0", "\n");
 
     private Player[] players;
-    private int playerNumber;
-    private boolean roundEnd = true;
+    public int playerNumber;
     private int answers = 0;
-    private boolean roundWon = false;
-
-    private GameServer gameServer;
-    private Player player;
-    private Prompt prompt;
     private StringInputScanner challenge; // "challenge" é a palavra do array naquele momento
-    private String answer;
     private int challengeCounter;
     private int roundCounter;
     private PrintWriter out;
     private ExecutorService fixedPool;
+    private boolean roundEnd;
+    public boolean isFull;
     public static final String[] expressionsArray = {
             "Zaragatoa",
             "Modorrento",
@@ -43,11 +38,11 @@ public class Game implements Runnable {
 
 
     public Game() throws IOException {
+        isFull = false;
         players = new Player[2];
-        challengeCounter = 0;
-        roundCounter = 1;
         fixedPool = Executors.newFixedThreadPool(2);
         this.challenge = new StringInputScanner();
+        roundEnd = false;
 
     }
 
@@ -59,17 +54,6 @@ public class Game implements Runnable {
     //}
 
 
-    //game start: início do jogo a partir do momento em que dois players estão conectados
-    public void start(Socket playerSocket) {
-        if (roundEnd) {
-            System.out.println(Thread.currentThread().getName() + " inside other start method");
-            nextChallenge(playerSocket);
-            givePrompt(); // pedido da resposta do player
-            roundEnd = false;
-        }
-
-
-    }
 
     /*public void start() {
 
@@ -84,29 +68,6 @@ public class Game implements Runnable {
     }*/
 
 
-    public void nextChallenge(Socket playerSocket) {
-
-            try {
-                System.out.println(Thread.currentThread().getName() + " inside next challenge method");
-                sendMessage(playerSocket, "New challenge \n");
-                Thread.sleep(3000);
-                sendMessage(playerSocket, "Get ready... \n");
-                Thread.sleep(3000);
-                sendMessage(playerSocket, "3\n");
-                Thread.sleep(1000);
-                sendMessage(playerSocket, "2\n");
-                Thread.sleep(1000);
-                sendMessage(playerSocket, "1\n");
-                Thread.sleep(1000);
-                sendMessage(playerSocket, "TYPE!\n");
-                Thread.sleep(1000);
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
-            }
-
-
-
-    }
 
     public void givePrompt() {
         for (int i = 0; i < players.length; i++) {
@@ -115,6 +76,7 @@ public class Game implements Runnable {
             }
         }
     }
+
 
 
     public void playerInput(Player player, String playerInput) {
@@ -129,7 +91,7 @@ public class Game implements Runnable {
             sendMessage(player.getUserSocket(), "You failed miserably. Try harder next round.");
         }
 
-        if (answers == 1) { //todo
+        if (answers == 1) {
             roundEnd = true;
             roundCounter++;
             challengeCounter++;
@@ -143,7 +105,7 @@ public class Game implements Runnable {
                 System.out.println("added player " + player.getInetAddress());
                 players[i] = new Player(player, this);
                 fixedPool.submit(players[i]);
-                playerNumber++;
+
                 return;
             }
         }
@@ -153,7 +115,8 @@ public class Game implements Runnable {
     public void endMessage() {
         for (int i = 0; i < players.length; i++) {
             if (players[i] != null) {
-                sendMessage(players[i].getUserSocket(), "Were you a TypeMachine? \n");
+                sendMessage(players[i].getUserSocket(), "org.academiadecodigo.altcatras65.Game over.\n" +
+                        "Were you a TypeMachine? \n");
             }
         }
     }
@@ -202,7 +165,6 @@ public class Game implements Runnable {
                             Thread.sleep(50);
                         }
                     }
-                    start(players[i].getUserSocket());
                 }
 
                 Thread.sleep(50);
@@ -210,5 +172,17 @@ public class Game implements Runnable {
                 System.out.println(e.getMessage());
             }
         }
+    }
+
+    public Player[] getPlayers() {
+        return players;
+    }
+
+    public int getPlayerNumber() {
+        return playerNumber;
+    }
+
+    public void setPlayerNumber(int playerNumber) {
+        this.playerNumber = playerNumber;
     }
 }
